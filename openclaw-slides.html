@@ -1,0 +1,1453 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenClaw 🦞 — 互联网技术中心内部分享</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        /* === RESET === */
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* === THEME: TERMINAL GREEN === */
+        :root {
+            --bg-primary: #080b10;
+            --bg-secondary: rgba(22, 27, 34, 0.7);
+            --bg-card: rgba(28, 33, 40, 0.6);
+            --terminal-green: #40ff6c;
+            --terminal-green-dim: rgba(64, 255, 108, 0.08);
+            --terminal-green-glow: rgba(64, 255, 108, 0.3);
+            --terminal-amber: #ffcc33;
+            --terminal-red: #ff5555;
+            --terminal-cyan: #58a6ff;
+            --terminal-magenta: #c678dd;
+            --text-primary: #f0f6fc;
+            --text-secondary: #8b949e;
+            --text-muted: #484f58;
+            --border-color: rgba(48, 54, 61, 0.5);
+            --font-mono: 'JetBrains Mono', monospace;
+            --font-sans: 'Outfit', system-ui, -apple-system, sans-serif;
+            --title-size: clamp(2rem, 6vw, 4rem);
+            --h2-size: clamp(1.4rem, 3.5vw, 2.2rem);
+            --h3-size: clamp(1rem, 2.2vw, 1.4rem);
+            --body-size: clamp(0.7rem, 1.4vw, 1rem);
+            --small-size: clamp(0.6rem, 1vw, 0.8rem);
+            --slide-padding: clamp(2rem, 5vw, 5rem);
+            --content-gap: clamp(1rem, 3vw, 2.5rem);
+            --element-gap: clamp(0.5rem, 1.5vw, 1.2rem);
+            --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+            --duration-normal: 0.8s;
+        }
+
+        /* === VIEWPORT BASE (MANDATORY) === */
+        html,
+        body {
+            height: 100%;
+            overflow-x: hidden;
+        }
+
+        html {
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+        }
+
+        .slide {
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+            scroll-snap-align: start;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .slide-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            max-height: 100%;
+            overflow: hidden;
+            padding: var(--slide-padding);
+        }
+
+        .card,
+        .container,
+        .content-box {
+            max-width: min(90vw, 1000px);
+            max-height: min(80vh, 700px);
+        }
+
+        .feature-list,
+        .bullet-list {
+            gap: clamp(0.4rem, 1vh, 1rem);
+        }
+
+        .feature-list li,
+        .bullet-list li {
+            font-size: var(--body-size);
+            line-height: 1.4;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+            gap: clamp(0.5rem, 1.5vw, 1rem);
+        }
+
+        img,
+        .image-container {
+            max-width: 100%;
+            max-height: min(50vh, 400px);
+            object-fit: contain;
+        }
+
+        @media (max-height: 700px) {
+            :root {
+                --slide-padding: clamp(0.75rem, 3vw, 2rem);
+                --content-gap: clamp(0.4rem, 1.5vw, 1rem);
+                --title-size: clamp(1.25rem, 4.5vw, 2.5rem);
+                --h2-size: clamp(1rem, 3vw, 1.75rem);
+            }
+        }
+
+        @media (max-height: 600px) {
+            :root {
+                --slide-padding: clamp(0.5rem, 2.5vw, 1.5rem);
+                --content-gap: clamp(0.3rem, 1vw, 0.75rem);
+                --title-size: clamp(1.1rem, 4vw, 2rem);
+                --body-size: clamp(0.7rem, 1.2vw, 0.95rem);
+            }
+
+            .nav-dots,
+            .keyboard-hint,
+            .decorative {
+                display: none;
+            }
+        }
+
+        @media (max-height: 500px) {
+            :root {
+                --slide-padding: clamp(0.4rem, 2vw, 1rem);
+                --title-size: clamp(1rem, 3.5vw, 1.5rem);
+                --h2-size: clamp(0.9rem, 2.5vw, 1.25rem);
+                --body-size: clamp(0.65rem, 1vw, 0.85rem);
+            }
+        }
+
+        @media (max-width: 600px) {
+            :root {
+                --title-size: clamp(1.25rem, 7vw, 2.5rem);
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.2s !important;
+            }
+
+            html {
+                scroll-behavior: auto;
+            }
+        }
+
+        /* === GLOBAL TERMINAL STYLES === */
+        body {
+            font-family: var(--font-mono);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: var(--body-size);
+            line-height: 1.5;
+        }
+
+        /* === MODERN BACKGROUND === */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(circle at 10% 20%, rgba(64, 255, 108, 0.03) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(88, 166, 255, 0.03) 0%, transparent 40%),
+                linear-gradient(to bottom, #080b10 0%, #0d1117 100%);
+            z-index: -1;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%),
+                linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
+            background-size: 100% 4px, 3px 100%;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.3;
+        }
+
+        .ambient-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(40rem at var(--x, 50%) var(--y, 50%), rgba(64, 255, 108, 0.04), transparent 80%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* === ANIMATIONS === */
+        .reveal {
+            opacity: 0;
+            filter: blur(10px);
+            transform: translateY(30px) scale(0.98);
+            transition:
+                opacity var(--duration-normal) var(--ease-out-expo),
+                filter var(--duration-normal) var(--ease-out-expo),
+                transform var(--duration-normal) var(--ease-out-expo);
+        }
+
+        .slide.visible .reveal {
+            opacity: 1;
+            filter: blur(0);
+            transform: translateY(0) scale(1);
+        }
+
+        .slide.visible .reveal:nth-child(1) {
+            transition-delay: 0.05s;
+        }
+
+        .slide.visible .reveal:nth-child(2) {
+            transition-delay: 0.15s;
+        }
+
+        .slide.visible .reveal:nth-child(3) {
+            transition-delay: 0.25s;
+        }
+
+        .slide.visible .reveal:nth-child(4) {
+            transition-delay: 0.35s;
+        }
+
+        .slide.visible .reveal:nth-child(5) {
+            transition-delay: 0.45s;
+        }
+
+        .slide.visible .reveal:nth-child(6) {
+            transition-delay: 0.55s;
+        }
+
+        /* === TERMINAL PROMPT === */
+        .prompt {
+            color: var(--terminal-green);
+        }
+
+        .prompt::before {
+            content: '$ ';
+            color: var(--text-muted);
+        }
+
+        .comment {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .comment::before {
+            content: '# ';
+        }
+
+        .keyword {
+            color: var(--terminal-cyan);
+        }
+
+        .string {
+            color: var(--terminal-amber);
+        }
+
+        .number {
+            color: var(--terminal-magenta);
+        }
+
+        .flag {
+            color: var(--terminal-red);
+        }
+
+        /* === BLINKING CURSOR === */
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0;
+            }
+        }
+
+        .cursor {
+            display: inline-block;
+            width: clamp(6px, 0.8vw, 10px);
+            height: 1.1em;
+            background: var(--terminal-green);
+            animation: blink 1s step-end infinite;
+            vertical-align: text-bottom;
+            margin-left: 2px;
+        }
+
+        /* === SLIDE HEADER (TOP BAR) === */
+        .slide-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: clamp(0.4rem, 1vh, 0.8rem) 0;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: var(--content-gap);
+            font-size: var(--small-size);
+            flex-shrink: 0;
+        }
+
+        .slide-header .path {
+            color: var(--terminal-green);
+        }
+
+        .slide-header .info {
+            color: var(--text-muted);
+        }
+
+        /* === SLIDE TITLES === */
+        h1 {
+            font-family: var(--font-sans);
+            font-size: var(--title-size);
+            font-weight: 800;
+            color: var(--text-primary);
+            line-height: 1;
+            letter-spacing: -0.04em;
+            text-transform: tight;
+        }
+
+        h1 span.accent {
+            color: var(--terminal-green);
+            text-shadow: 0 0 30px var(--terminal-green-glow);
+        }
+
+        h2 {
+            font-family: var(--font-sans);
+            font-size: var(--h2-size);
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.2;
+            letter-spacing: -0.02em;
+        }
+
+        h2::before {
+            content: '// ';
+            color: var(--terminal-green);
+            font-family: var(--font-mono);
+            font-weight: 400;
+        }
+
+        h3 {
+            font-family: var(--font-mono);
+            font-size: var(--h3-size);
+            font-weight: 500;
+            color: var(--terminal-cyan);
+        }
+
+        /* === CODE BLOCK CARDS === */
+        .code-block {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: clamp(1rem, 2vw, 2rem);
+            font-size: var(--body-size);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .code-block::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border-color), transparent);
+        }
+
+        .code-block .title-bar {
+            display: flex;
+            gap: 6px;
+            margin-bottom: clamp(0.3rem, 0.8vh, 0.6rem);
+            padding-bottom: clamp(0.3rem, 0.8vh, 0.6rem);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .dot.red {
+            background: #ff5f57;
+        }
+
+        .dot.yellow {
+            background: #febc2e;
+        }
+
+        .dot.green {
+            background: #28c840;
+        }
+
+        /* === FEATURE CARDS (GRID) === */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(180px, 25vw, 280px)), 1fr));
+            gap: clamp(0.5rem, 1.2vw, 1rem);
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: clamp(1rem, 1.5vw, 1.5rem);
+            transition: all 0.4s var(--ease-out-expo);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(64, 255, 108, 0.4);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 20px var(--terminal-green-dim);
+            background: rgba(22, 27, 34, 0.8);
+        }
+
+        .feature-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background: var(--terminal-green);
+            opacity: 0.6;
+        }
+
+        .feature-card .icon {
+            font-size: clamp(1rem, 2vw, 1.5rem);
+            margin-bottom: clamp(0.2rem, 0.5vh, 0.4rem);
+        }
+
+        .feature-card h3 {
+            font-size: var(--body-size);
+            margin-bottom: clamp(0.15rem, 0.4vh, 0.3rem);
+        }
+
+        .feature-card h3::before {
+            content: none;
+        }
+
+        .feature-card p {
+            font-size: var(--small-size);
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        /* === STAT BADGES === */
+        .stat-row {
+            display: flex;
+            gap: clamp(0.5rem, 1.5vw, 1.5rem);
+            flex-wrap: wrap;
+        }
+
+        .stat-badge {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: clamp(0.3rem, 0.8vw, 0.5rem) clamp(0.5rem, 1.2vw, 1rem);
+            display: flex;
+            align-items: center;
+            gap: clamp(0.3rem, 0.8vw, 0.5rem);
+        }
+
+        .stat-badge .val {
+            color: var(--terminal-green);
+            font-weight: 700;
+            font-size: var(--body-size);
+        }
+
+        .stat-badge .lbl {
+            color: var(--text-secondary);
+            font-size: var(--small-size);
+        }
+
+        /* === TABLE === */
+        .term-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: var(--small-size);
+        }
+
+        .term-table th {
+            text-align: left;
+            color: var(--terminal-cyan);
+            font-weight: 500;
+            padding: clamp(0.2rem, 0.5vh, 0.4rem) clamp(0.3rem, 0.8vw, 0.6rem);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .term-table td {
+            padding: clamp(0.2rem, 0.5vh, 0.4rem) clamp(0.3rem, 0.8vw, 0.6rem);
+            border-bottom: 1px solid rgba(48, 54, 61, 0.5);
+            color: var(--text-secondary);
+        }
+
+        .term-table td:first-child {
+            color: var(--text-primary);
+        }
+
+        .term-table .check {
+            color: var(--terminal-green);
+        }
+
+        .term-table .cross {
+            color: var(--terminal-red);
+        }
+
+        /* === ARCHITECTURE DIAGRAM (ASCII) === */
+        .ascii-art {
+            font-size: clamp(0.5rem, 1vw, 0.8rem);
+            line-height: 1.35;
+            color: var(--terminal-green);
+            white-space: pre;
+            overflow: hidden;
+        }
+
+        /* === PROGRESS BAR === */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 2px;
+            background: var(--terminal-green);
+            box-shadow: 0 0 8px var(--terminal-green-glow);
+            z-index: 1000;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        /* === NAV DOTS === */
+        .nav-dots {
+            position: fixed;
+            right: clamp(0.5rem, 1.5vw, 1.5rem);
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 100;
+        }
+
+        .nav-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--text-muted);
+            cursor: pointer;
+            transition: background 0.3s, box-shadow 0.3s;
+            border: none;
+            padding: 0;
+        }
+
+        .nav-dot.active {
+            background: var(--terminal-green);
+            box-shadow: 0 0 6px var(--terminal-green-glow);
+        }
+
+        /* === KEYBOARD HINT === */
+        .keyboard-hint {
+            position: fixed;
+            bottom: clamp(0.5rem, 1.5vh, 1rem);
+            right: clamp(0.5rem, 1.5vw, 1.5rem);
+            font-size: clamp(0.5rem, 0.7vw, 0.65rem);
+            color: var(--text-muted);
+            z-index: 100;
+        }
+
+        kbd {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            padding: 1px 5px;
+            font-family: var(--font-mono);
+            font-size: inherit;
+        }
+
+        /* === INLINE EDITING === */
+        .edit-hotzone {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 80px;
+            height: 80px;
+            z-index: 10000;
+            cursor: pointer;
+        }
+
+        .edit-toggle {
+            position: fixed;
+            top: 12px;
+            left: 12px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--terminal-green);
+            font-family: var(--font-mono);
+            font-size: var(--small-size);
+            padding: 4px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 10001;
+        }
+
+        .edit-toggle.show,
+        .edit-toggle.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .editing [contenteditable="true"] {
+            outline: 1px dashed var(--terminal-green-dim);
+            outline-offset: 2px;
+            cursor: text;
+        }
+
+        .editing [contenteditable="true"]:focus {
+            outline-color: var(--terminal-green);
+            background: rgba(57, 211, 83, 0.05);
+        }
+
+        /* === TITLE SLIDE SPECIAL === */
+        .title-slide .slide-content {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .title-slide h1 {
+            margin-bottom: clamp(0.5rem, 1.5vh, 1rem);
+        }
+
+        /* === LIST STYLING === */
+        .term-list {
+            list-style: none;
+        }
+
+        .term-list li {
+            padding: clamp(0.15rem, 0.4vh, 0.3rem) 0;
+            font-size: var(--body-size);
+            color: var(--text-secondary);
+        }
+
+        .term-list li::before {
+            content: '› ';
+            color: var(--terminal-green);
+            font-weight: 700;
+        }
+
+        /* === TAG / PILL === */
+        .tag {
+            display: inline-block;
+            background: var(--terminal-green-dim);
+            color: var(--terminal-green);
+            border: 1px solid rgba(57, 211, 83, 0.3);
+            border-radius: 3px;
+            padding: 1px 8px;
+            font-size: var(--small-size);
+            margin: 2px;
+        }
+
+        .tag.cyan {
+            background: rgba(88, 166, 255, 0.15);
+            color: var(--terminal-cyan);
+            border-color: rgba(88, 166, 255, 0.3);
+        }
+
+        .tag.amber {
+            background: rgba(227, 179, 65, 0.15);
+            color: var(--terminal-amber);
+            border-color: rgba(227, 179, 65, 0.3);
+        }
+
+        .tag.magenta {
+            background: rgba(188, 140, 255, 0.15);
+            color: var(--terminal-magenta);
+            border-color: rgba(188, 140, 255, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Progress Bar -->
+    <div class="progress-bar" id="progressBar"></div>
+
+    <!-- Nav Dots (generated by JS) -->
+    <nav class="nav-dots" id="navDots" aria-label="Slide navigation"></nav>
+
+    <!-- Keyboard Hint -->
+    <div class="keyboard-hint"><kbd>↑</kbd><kbd>↓</kbd> navigate · <kbd>E</kbd> edit</div>
+
+    <!-- Inline Editing -->
+    <div class="edit-hotzone" id="editHotzone"></div>
+    <button class="edit-toggle" id="editToggle" title="Edit mode (E)">✏️ edit</button>
+
+    <!-- ============================================
+     SLIDE 1: TITLE
+     ============================================ -->
+    <section class="slide title-slide" id="slide-1">
+        <div class="ambient-glow" id="ambientGlow"></div>
+        <div class="slide-content">
+            <h1 class="reveal"><span class="accent">🦞</span> OpenClaw</h1>
+            <p class="reveal"
+                style="color:var(--text-secondary); font-family:var(--font-sans); font-size:var(--h3-size); margin-bottom:var(--content-gap); font-weight:300; letter-spacing:0.1em; text-transform:uppercase;">
+                Personal AI Assistant</p>
+            <div class="reveal stat-row" style="justify-content:center;">
+                <span class="tag">⭐ 279k Stars</span>
+                <span class="tag cyan">👥 1,100 Contributors</span>
+                <span class="tag amber">📜 MIT License</span>
+                <span class="tag magenta">🏷️ v2026.3.7</span>
+            </div>
+            <p class="reveal"
+                style="color:var(--text-muted); font-size:var(--small-size); margin-top:var(--element-gap);">
+                <span class="prompt" style="color:var(--terminal-green);">openclaw onboard</span><span
+                    class="cursor"></span>
+            </p>
+            <p class="reveal comment"
+                style="color:var(--text-muted); font-size:var(--small-size); margin-top:var(--element-gap);">
+                互联网技术中心内部分享/2026-03-10</p>
+        </div>
+    </section>
+
+    <!-- ============================================
+     SLIDE 2: WHAT IS OPENCLAW
+     ============================================ -->
+    <section class="slide" id="slide-2">
+        <div class="slide-content">
+            <div class="slide-header">
+                <span class="path">~/openclaw/intro</span>
+                <span class="info">02/12</span>
+            </div>
+            <h2 class="reveal">OpenClaw 是什么？</h2>
+            <div class="reveal"
+                style="margin-top:var(--content-gap); padding:clamp(0.4rem, 1vw, 0.8rem); border-left:3px solid var(--terminal-green); background:var(--terminal-green-dim); border-radius:0 6px 6px 0;">
+                <p style="font-size:var(--h3-size); color:var(--text-primary); font-weight:500; line-height:1.6;">
+                    <span style="color:var(--terminal-cyan); font-weight:700;">运行在本地</span>，可以通过<span
+                        style="color:var(--terminal-green); font-weight:700;">飞书/微信</span>等远程指挥，<span
+                        style="color:var(--terminal-amber); font-weight:700;">7×24 自动运转</span>的 AI 助手<span
+                        class="cursor"></span>
+                </p>
+            </div>
+            <div
+                style="display:grid; grid-template-columns:1fr 1fr; gap:clamp(0.5rem, 1.5vw, 1.5rem); margin-top:var(--content-gap); align-items:start;">
+                <div class="reveal" style="display:flex; flex-direction:column; gap:var(--element-gap);">
+                    <div
+                        style="border:1px solid var(--border-color); border-radius:6px; padding:clamp(0.3rem, 0.8vw, 0.5rem); overflow:hidden;">
+                        <img src="https://api.star-history.com/svg?repos=openclaw/openclaw&type=Date&theme=dark"
+                            alt="OpenClaw Star History"
+                            style="width:100%; height:auto; max-height:min(30vh, 250px); object-fit:contain; display:block;"
+                            loading="lazy"
+                            onerror="this.parentElement.innerHTML='<div style=\'padding:0.5rem;text-align:center;color:var(--text-muted);font-size:var(--small-size)\'>⚠️ 需联网 <a href=\'https://star-history.com/#openclaw/openclaw&Date\' style=\'color:var(--terminal-green)\'>查看→</a></div>'" />
+                    </div>
+                </div>
+                <div class="reveal"
+                    style="display:grid; grid-template-columns:1fr 1fr; gap:clamp(0.3rem, 0.8vw, 0.5rem);">
+                    <div class="stat-badge"
+                        style="flex-direction:column; align-items:center; padding:clamp(0.4rem, 1vw, 0.8rem);">
+                        <span class="val" style="font-size:clamp(1.2rem, 2.5vw, 2rem);">279k</span>
+                        <span class="lbl">⭐ Stars</span>
+                    </div>
+                    <div class="stat-badge"
+                        style="flex-direction:column; align-items:center; padding:clamp(0.4rem, 1vw, 0.8rem);">
+                        <span class="val"
+                            style="font-size:clamp(1.2rem, 2.5vw, 2rem); color:var(--terminal-amber);">53.1k</span>
+                        <span class="lbl">🍴 Forks</span>
+                    </div>
+                    <div class="stat-badge"
+                        style="flex-direction:column; align-items:center; padding:clamp(0.4rem, 1vw, 0.8rem);">
+                        <span class="val"
+                            style="font-size:clamp(1.2rem, 2.5vw, 2rem); color:var(--terminal-cyan);">1,100</span>
+                        <span class="lbl">👥 Contributors</span>
+                    </div>
+                    <div class="stat-badge"
+                        style="flex-direction:column; align-items:center; padding:clamp(0.4rem, 1vw, 0.8rem);">
+                        <span class="val"
+                            style="font-size:clamp(1.2rem, 2.5vw, 2rem); color:var(--terminal-magenta);">17k</span>
+                        <span class="lbl">📝 Commits</span>
+                    </div>
+                    <div class="stat-badge"
+                        style="flex-direction:column; align-items:center; padding:clamp(0.4rem, 1vw, 0.8rem);">
+                        <span class="val"
+                            style="font-size:clamp(1rem, 2vw, 1.5rem); color:var(--terminal-red);">15.6k</span>
+                        <span class="lbl">🐛 Issues</span>
+                    </div>
+                    <div class="stat-badge"
+                        style="flex-direction:column; align-items:center; padding:clamp(0.4rem, 1vw, 0.8rem);">
+                        <span class="val"
+                            style="font-size:clamp(1rem, 2vw, 1.5rem); color:var(--terminal-green);">22k</span>
+                        <span class="lbl">🔀 PRs</span>
+                    </div>
+                </div>
+            </div>
+            <div class="reveal stat-row" style="margin-top:var(--element-gap);">
+                <span class="tag">MIT 开源</span>
+                <span class="tag cyan">自托管</span>
+                <span class="tag amber">22+ 渠道</span>
+                <span class="tag magenta">真 Agent</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================
+     SLIDE 3: ARCHITECTURE
+     ============================================ -->
+    <section class="slide" id="slide-3">
+        <div class="slide-content">
+            <div class="slide-header">
+                <span class="path">~/openclaw/architecture</span>
+                <span class="info">03/12</span>
+            </div>
+            <h2 class="reveal">🏗️ Architecture：核心架构</h2>
+            <div class="reveal" style="margin-top:var(--content-gap); display:flex; justify-content:center;">
+                <div
+                    style="background:white; border:1px solid var(--border-color); border-radius:8px; padding:8px; overflow:hidden; box-shadow:0 0 20px var(--terminal-green-dim); max-width:100%;">
+                    <img src="openclaw-arch-v2.png" alt="龙虾系统架构"
+                        style="width:100%; height:auto; max-height:min(55vh, 450px); object-fit:contain; display:block; border-radius:4px;" />
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================
+     SLIDE 4: WHY SO HOT
+     ============================================ -->
+    <section class="slide" id="slide-4">
+        <div class="slide-content">
+            <div class="slide-header">
+                <span class="path">~/openclaw/why-hot</span>
+                <span class="info">04/12</span>
+            </div>
+            <h2 class="reveal">为什么爆火？</h2>
+            <div class="reveal"
+                style="margin-top:var(--element-gap); padding:clamp(0.4rem, 1vw, 0.8rem); border-left:3px solid var(--terminal-green); background:var(--terminal-green-dim); border-radius:0 6px 6px 0;">
+                <p style="font-size:var(--h3-size); color:var(--text-primary); font-weight:500; line-height:1.5;">
+                    龙虾不是工具，是有<span style="color:var(--terminal-green); font-weight:700;">记忆</span>、有<span
+                        style="color:var(--terminal-cyan); font-weight:700;">经验</span>、能<span
+                        style="color:var(--terminal-amber); font-weight:700;">持续成长</span>的数字员工<span
+                        class="cursor"></span>
+                </p>
+            </div>
+            <div
+                style="display:grid; grid-template-columns:1.2fr 1fr; gap:clamp(0.5rem, 1.5vw, 1rem); margin-top:var(--content-gap); align-items:start;">
+                <div class="reveal" style="display:flex; flex-direction:column; gap:clamp(0.2rem, 0.4vw, 0.3rem);">
+                    <div
+                        style="background:var(--bg-secondary); border-left:2px solid var(--terminal-green); border-radius:0 4px 4px 0; padding:clamp(0.15rem, 0.4vw, 0.3rem) clamp(0.3rem, 0.8vw, 0.6rem);">
+                        <p style="color:var(--terminal-green); font-weight:700; font-size:var(--small-size);">🔓 开源 +
+                            本地部署</p>
+                        <p style="color:var(--text-muted); font-size:var(--small-size);">数据隐私可控，不被厂商锁定</p>
+                    </div>
+                    <div
+                        style="background:var(--bg-secondary); border-left:2px solid var(--terminal-cyan); border-radius:0 4px 4px 0; padding:clamp(0.15rem, 0.4vw, 0.3rem) clamp(0.3rem, 0.8vw, 0.6rem);">
+                        <p style="color:var(--terminal-cyan); font-weight:700; font-size:var(--small-size);">📚 Skill 生态
+                        </p>
+                        <p style="color:var(--text-muted); font-size:var(--small-size);">内置 + 自定义 + 第三方，无限扩展</p>
+                    </div>
+                    <div
+                        style="background:var(--bg-secondary); border-left:2px solid var(--terminal-amber); border-radius:0 4px 4px 0; padding:clamp(0.15rem, 0.4vw, 0.3rem) clamp(0.3rem, 0.8vw, 0.6rem);">
+                        <p style="color:var(--terminal-amber); font-weight:700; font-size:var(--small-size);">🧠 Memory
+                            系统</p>
+                        <p style="color:var(--text-muted); font-size:var(--small-size);">跨会话记忆，越用越懂你</p>
+                    </div>
+                    <div
+                        style="background:var(--bg-secondary); border-left:2px solid var(--terminal-magenta); border-radius:0 4px 4px 0; padding:clamp(0.15rem, 0.4vw, 0.3rem) clamp(0.3rem, 0.8vw, 0.6rem);">
+                        <p style="color:var(--terminal-magenta); font-weight:700; font-size:var(--small-size);">⚡ 7×24
+                            自动化运转</p>
+                        <p style="color:var(--text-muted); font-size:var(--small-size);">自动执行任务，像数字员工一样持续工作</p>
+                    </div>
+                    <div
+                        style="background:var(--bg-secondary); border-left:2px solid var(--terminal-green); border-radius:0 4px 4px 0; padding:clamp(0.15rem, 0.4vw, 0.3rem) clamp(0.3rem, 0.8vw, 0.6rem);">
+                        <p style="color:var(--terminal-green); font-weight:700; font-size:var(--small-size);">💬 多渠道整合
+                        </p>
+                        <p style="color:var(--text-muted); font-size:var(--small-size);">飞书/Discord/Telegram 一个入口全覆盖</p>
+                    </div>
+                    <div
+                        style="background:var(--bg-secondary); border-left:2px solid var(--terminal-cyan); border-radius:0 4px 4px 0; padding:clamp(0.15rem, 0.4vw, 0.3rem) clamp(0.3rem, 0.8vw, 0.6rem);">
+                        <p style="color:var(--terminal-cyan); font-weight:700; font-size:var(--small-size);">🤖 多模型自由切换
+                        </p>
+                        <p style="color:var(--text-muted); font-size:var(--small-size);">OpenAI / Claude / 国内 / 本地模型</p>
+                    </div>
+                    <div
+                        style="background:var(--bg-secondary); border-left:2px solid var(--terminal-amber); border-radius:0 4px 4px 0; padding:clamp(0.15rem, 0.4vw, 0.3rem) clamp(0.3rem, 0.8vw, 0.6rem);">
+                        <p style="color:var(--terminal-amber); font-weight:700; font-size:var(--small-size);">📱 设备配对
+                        </p>
+                        <p style="color:var(--text-muted); font-size:var(--small-size);">连手机、IoT，远程控制能力</p>
+                    </div>
+                    <div
+                        style="background:var(--bg-secondary); border-left:2px solid var(--terminal-red); border-radius:0 4px 4px 0; padding:clamp(0.15rem, 0.4vw, 0.3rem) clamp(0.3rem, 0.8vw, 0.6rem);">
+                        <p style="color:var(--terminal-red); font-weight:700; font-size:var(--small-size);">🦞 "养龙虾"梗 —
+                            降低传播门槛，社交属性强</p>
+                    </div>
+                </div>
+                <div class="reveal" style="display:flex; align-items:center; justify-content:center;">
+                    <img src="claw-vs-agent.jpg" alt="龙虾 vs Agent"
+                        style="width:100%; height:auto; max-height:min(70vh, 550px); object-fit:contain; display:block; border-radius:4px;" />
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================
+     SLIDE 5: ENVIRONMENT
+     ============================================ -->
+    <section class="slide" id="slide-5">
+        <div class="slide-content">
+            <div class="slide-header">
+                <span class="path">~/openclaw/environment</span>
+                <span class="info">05/12</span>
+            </div>
+            <h2 class="reveal">🖥️ 运行环境：一台完整的电脑</h2>
+            <p class="reveal" style="color:var(--text-secondary); margin-top:var(--element-gap);">
+                <span class="comment">从“沙箱里的对话框”进化为“拥有完整权限的数字员工”</span>
+            </p>
+            <div
+                style="display:grid; grid-template-columns:1fr 1.4fr; gap:clamp(0.5rem, 1.5vw, 1.5rem); margin-top:var(--element-gap); align-items:center;">
+                <div class="reveal" style="display:flex; flex-direction:column; gap:var(--element-gap);">
+                    <ul class="term-list">
+                        <li><strong style="color:var(--terminal-green)">完整系统权限</strong> — Shell、文件、网络全打通，拥有完整的操作系统权限
+                        </li>
+                        <li><strong style="color:var(--terminal-cyan)">浏览器自动化</strong> — 像真人一样操作网页，搜索、填表、截图一气呵成
+                        </li>
+                        <li><strong style="color:var(--terminal-amber)">软件协同</strong> — 邮件、Office、API 调用全打通，串联日常工作流
+                        </li>
+                        <li><strong style="color:var(--terminal-magenta)">低配即可</strong> — 不需要高端显卡，普通老电脑就能当 AI 工位
+                        </li>
+                    </ul>
+                </div>
+                <div class="reveal"
+                    style="display:flex; align-items:center; justify-content:center; transform: scale(1.15); transform-origin: center right;">
+                    <img src="env-computer-v2.png" alt="环境"
+                        style="width:100%; height:auto; object-fit:contain; display:block; border-radius:4px;" />
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================
+     SLIDE 6: MEMORY
+     ============================================ -->
+    <section class="slide" id="slide-6">
+        <div class="slide-content">
+            <div class="slide-header">
+                <span class="path">~/openclaw/memory</span>
+                <span class="info">06/12</span>
+            </div>
+            <h2 class="reveal">🧠 Memory：越用越懂你</h2>
+            <p class="reveal" style="color:var(--text-secondary); margin-top:var(--element-gap);">
+                <span class="comment">LLM 说"我记住了"只是幻觉，OpenClaw 用文件系统构建真实记忆</span>
+            </p>
+            <div
+                style="display:grid; grid-template-columns:1fr 1.4fr; gap:clamp(0.5rem, 1.5vw, 1.5rem); margin-top:var(--element-gap); align-items:center;">
+                <div class="reveal" style="display:flex; flex-direction:column; gap:var(--element-gap);">
+                    <ul class="term-list">
+                        <li><strong style="color:var(--terminal-green)">混合检索</strong> — 语义向量 + 关键词混合检索，找回记忆更精准
+                        </li>
+                        <li><strong style="color:var(--terminal-cyan)">记忆文件</strong> —
+                            每日记录（memory/YYYY-MM-DD.md）与核心事实（MEMORY.md）存储，永久保留工作经验</li>
+                        <li><strong style="color:var(--terminal-amber)">自动冲刷 (Auto Flush)</strong> —
+                            会话即将写满时，自动将重要事实存入本地文件</li>
+                        <li><strong style="color:var(--terminal-magenta)">SQLite-vec 加速</strong> — 本地高性能向量引擎，毫秒级召回万条记忆碎片
+                        </li>
+                    </ul>
+                </div>
+                <div class="reveal"
+                    style="display:flex; align-items:center; justify-content:center; transform: scale(1.15); transform-origin: center right;">
+                    <img src="memory-simple.png" alt="记忆系统"
+                        style="width:100%; height:auto; object-fit:contain; display:block; border-radius:4px;" />
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================
+     SLIDE 7: SKILLS
+     ============================================ -->
+    <section class="slide" id="slide-7">
+        <div class="slide-content">
+            <div class="slide-header">
+                <span class="path">~/openclaw/skills</span>
+                <span class="info">07/12</span>
+            </div>
+            <h2 class="reveal">📚 Skill：无限拓展能力</h2>
+            <p class="reveal" style="color:var(--text-secondary); margin-top:var(--element-gap);">
+                <span class="comment">无需复杂编码，通过 Markdown 文件即可赋予 Agent 全新能力</span>
+            </p>
+            <div
+                style="display:grid; grid-template-columns:1fr 1.4fr; gap:clamp(0.5rem, 1.5vw, 1.5rem); margin-top:var(--element-gap); align-items:center;">
+                <div class="reveal" style="display:flex; flex-direction:column; gap:var(--element-gap);">
+                    <ul class="term-list">
+                        <li><strong style="color:var(--terminal-green)">SKILL.md</strong> — 技能的核心定义，只需描述“做什么”和“怎么做”</li>
+                        <li><strong style="color:var(--terminal-cyan)">极简扩展</strong> — 在 <code
+                                style="font-size:0.9em;">/skills</code> 下新建文件夹并放入文档，AI 即可瞬间习得</li>
+                        <li><strong style="color:var(--terminal-amber)">ClawHub 生态</strong> — 官方与社区技能一键安装，实现全球技能秒级同步
+                        </li>
+                        <li><strong style="color:var(--terminal-magenta)">私有与共享</strong> — 支持工作区专用技能或系统级全局共享，灵活配置</li>
+                        <li><strong style="color:var(--terminal-green)">自我进化</strong> — 解决问题后自动反思并生成 Skill，永久避免重复踩坑</li>
+                    </ul>
+                </div>
+                <div class="reveal"
+                    style="display:flex; align-items:center; justify-content:center; transform: scale(1.15); transform-origin: center right;">
+                    <img src="skills-evolution.png" alt="技能"
+                        style="width:100%; height:auto; object-fit:contain; display:block;" />
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================
+     SLIDE 8: AUTOMATION
+     ============================================ -->
+    <section class="slide" id="slide-8">
+        <div class="slide-content">
+            <div class="slide-header">
+                <span class="path">~/openclaw/automation</span>
+                <span class="info">08/12</span>
+            </div>
+            <h2 class="reveal">⚡ 自动化：7×24 不间断</h2>
+            <p class="reveal" style="color:var(--text-secondary); margin-top:var(--element-gap);">
+                <span class="comment">不会累、不会情绪化、不会因为放假就消失</span>
+            </p>
+            <div
+                style="display:grid; grid-template-columns:1fr 1.4fr; gap:clamp(0.5rem, 1.5vw, 1.5rem); margin-top:var(--element-gap); align-items:center;">
+                <div class="reveal" style="display:flex; flex-direction:column; gap:var(--element-gap);">
+                    <ul class="term-list">
+                        <li><strong style="color:var(--terminal-green)">Cron 定时任务</strong> — 定时提醒、定时执行</li>
+                        <li><strong style="color:var(--terminal-cyan)">主动监控</strong> — 主动监控相关事件，自动处理，提供报告</li>
+                        <li><strong style="color:var(--terminal-amber)">Webhook 触发</strong> — GitLab/邮件/日历等外部事件自动响应</li>
+                    </ul>
+                </div>
+                <div class="reveal"
+                    style="display:flex; align-items:center; justify-content:center; transform: scale(1.15); transform-origin: center right;">
+                    <img src="automation-logic.png" alt="自动化"
+                        style="width:100%; height:auto; object-fit:contain; display:block;" />
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================
+     SLIDE 9: CHANNELS
+     ============================================ -->
+    <section class="slide" id="slide-9">
+        <div class="slide-content">
+            <div class="slide-header">
+                <span class="path">~/openclaw/channels</span>
+                <span class="info">09/12</span>
+            </div>
+            <h2 class="reveal">💬 Channels：多渠道整合</h2>
+            <p class="reveal" style="color:var(--text-secondary); margin-top:var(--element-gap);">
+                <span class="comment">你在哪里，龙虾就在哪里。支持 20+ 主流消息平台。</span>
+            </p>
+            <div
+                style="display:grid; grid-template-columns:1fr 1.4fr; gap:clamp(0.5rem, 1.5vw, 1.5rem); margin-top:var(--element-gap); align-items:center;">
+                <div class="reveal">
+                    <h3
+                        style="margin-bottom:var(--element-gap); color:var(--terminal-green); border-bottom:1px solid var(--terminal-green); padding-bottom:4px;">
+                        常用渠道</h3>
+                    <ul class="term-list" style="columns: 2; gap: 1rem;">
+                        <li><strong style="color:var(--terminal-green)">Feishu</strong> (飞书)</li>
+                        <li><strong style="color:var(--terminal-cyan)">Discord</strong></li>
+                        <li><strong style="color:var(--terminal-amber)">Telegram</strong></li>
+                        <li><strong style="color:var(--terminal-magenta)">Slack</strong></li>
+                        <li><strong style="color:var(--terminal-green)">WhatsApp</strong></li>
+                        <li><strong style="color:var(--terminal-cyan)">WeChat</strong> (微信)</li>
+                        <li><strong style="color:var(--terminal-amber)">Teams</strong></li>
+                        <li><strong style="color:var(--terminal-magenta)">WebChat</strong></li>
+                    </ul>
+                </div>
+                <div class="reveal"
+                    style="display:flex; align-items:center; justify-content:center; transform: scale(1.15); transform-origin: center right;">
+                    <img src="channels-hub.png" alt="多渠道整合"
+                        style="width:100%; height:auto; object-fit:contain; display:block;" />
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================
+     SLIDE 10: USE CASES
+     ============================================ -->
+    <section class="slide" id="slide-10">
+        <div class="slide-content">
+            <div class="slide-header">
+                <span class="path">~/openclaw/use-cases</span>
+                <span class="info">10/12</span>
+            </div>
+            <h2 class="reveal">使用场景：打造你的 7×24 数字员工</h2>
+            <div
+                style="display:grid; grid-template-columns:1fr 1.4fr; gap:clamp(0.5rem, 1.5vw, 1.5rem); margin-top:var(--element-gap); align-items:center;">
+                <div class="reveal" style="display:flex; flex-direction:column; gap:var(--element-gap);">
+                    <div>
+                        <h3
+                            style="margin-bottom:var(--element-gap); border-bottom:1px solid var(--terminal-green); padding-bottom:2px; font-size:var(--body-size);">
+                            💼 智能协作与业务</h3>
+                        <table class="term-table">
+                            <tbody>
+                                <tr>
+                                    <td style="color:var(--terminal-green); font-weight:700;">飞书数字员工</td>
+                                    <td>进驻群聊直接对话，查阅文档、总结会议、管理团队日程</td>
+                                </tr>
+                                <tr>
+                                    <td style="color:var(--terminal-green); font-weight:700;">用户原声中心</td>
+                                    <td>监控全渠道售后与差评，自动聚类总结并推送至相关负责人</td>
+                                </tr>
+                                <tr>
+                                    <td style="color:var(--terminal-green); font-weight:700;">内部技能市场</td>
+                                    <td>技术中心能力沉淀，实现 Agent 技能的发现、共享与复用</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                        <h3
+                            style="margin-bottom:var(--element-gap); border-bottom:1px solid var(--terminal-cyan); padding-bottom:2px; font-size:var(--body-size); margin-top: var(--element-gap);">
+                            🛠️ 研发与运维守护</h3>
+                        <table class="term-table">
+                            <tbody>
+                                <tr>
+                                    <td style="color:var(--terminal-cyan); font-weight:700;">远程指挥编码</td>
+                                    <td>随时随地通过即时通讯终端下达指令，自动化处理代码重构</td>
+                                </tr>
+                                <tr>
+                                    <td style="color:var(--terminal-cyan); font-weight:700;">质量与 Bug 巡查</td>
+                                    <td>全天候自动巡检系统 Bug，监控线上服务状态与安全风险</td>
+                                </tr>
+                                <tr>
+                                    <td style="color:var(--terminal-cyan); font-weight:700;">运维线上巡检</td>
+                                    <td>定时执行资源检查，实时推送告警并提供初步诊断建议</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="reveal"
+                    style="display:flex; align-items:center; justify-content:center; transform: scale(1.15); transform-origin: center right;">
+                    <div style="width:100%; ">
+                        <img src="use-cases-whiteboard.png" alt="使用场景"
+                            style="width:100%; height:auto; max-height:min(55vh, 450px); object-fit:contain; display:block;" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================
+     SLIDE 11: QUICK START
+     ============================================ -->
+    <section class="slide" id="slide-11">
+        <div class="slide-content">
+            <div class="slide-header">
+                <span class="path">~/openclaw/quickstart</span>
+                <span class="info">11/12</span>
+            </div>
+            <h2 class="reveal">快速上手</h2>
+            <div class="reveal code-block" style="margin-top:var(--content-gap);">
+                <div class="title-bar"><span class="dot red"></span><span class="dot yellow"></span><span
+                        class="dot green"></span></div>
+                <p><span class="comment">前置条件：Node.js ≥ 22</span></p>
+                <p><span class="prompt">node --version</span></p>
+                <br>
+                <p><span class="comment">安装 (macOS / Linux)</span></p>
+                <p><span class="prompt">curl -fsSL https://openclaw.ai/install.sh | bash</span></p>
+                <br>
+                <p><span class="comment">安装 (Windows PowerShell)</span></p>
+                <p><span class="prompt">iwr -useb https://openclaw.ai/install.ps1 | iex</span></p>
+                <br>
+                <p><span class="comment">引导式配置（推荐）</span></p>
+                <p><span class="prompt">openclaw onboard --install-daemon</span></p>
+                <br>
+                <p><span class="comment">检查 Gateway 状态</span></p>
+                <p><span class="prompt">openclaw gateway status</span></p>
+                <br>
+                <p><span class="comment">打开控制面板</span></p>
+                <p><span class="prompt">openclaw dashboard</span><span class="cursor"></span></p>
+            </div>
+            <div class="reveal stat-row" style="margin-top:var(--element-gap);">
+                <span class="tag">📖 docs.openclaw.ai</span>
+                <span class="tag cyan">💻 github.com/openclaw</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================
+     SLIDE 12: END
+     ============================================ -->
+    <section class="slide title-slide" id="slide-12">
+        <div class="slide-content">
+            <h1 class="reveal" style="font-size:var(--h2-size);">Thank You 🦞</h1>
+            <div class="reveal code-block" style="margin-top:var(--content-gap); display:inline-block;">
+                <p><span class="prompt">open https://github.com/openclaw/openclaw</span></p>
+                <p><span class="prompt">open https://docs.openclaw.ai</span></p>
+            </div>
+            <div class="reveal stat-row" style="margin-top:var(--content-gap); justify-content:center;">
+                <span class="tag">github.com/openclaw</span>
+                <span class="tag cyan">docs.openclaw.ai</span>
+                <span class="tag amber">discord.gg/clawd</span>
+            </div>
+            <p class="reveal"
+                style="color:var(--text-muted); font-size:var(--small-size); margin-top:var(--element-gap);">
+                互联网技术中心内部分享 · 2026.03.10 · Q&A</p>
+        </div>
+    </section>
+    <script>
+        class SlidePresentation {
+            constructor() {
+                this.slides = document.querySelectorAll('.slide');
+                this.currentSlide = 0;
+                this.isScrolling = false;
+                this.setupIntersectionObserver();
+                this.setupKeyboardNav();
+                this.setupTouchNav();
+                this.setupWheelNav();
+                this.setupProgressBar();
+                this.setupNavDots();
+            }
+
+            setupIntersectionObserver() {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('visible');
+                            const idx = [...this.slides].indexOf(entry.target);
+                            if (idx !== -1) {
+                                this.currentSlide = idx;
+                                this.updateNavDots();
+                                this.updateProgressBar();
+                            }
+                        }
+                    });
+                }, { threshold: 0.5 });
+                this.slides.forEach(s => observer.observe(s));
+            }
+
+            goTo(index) {
+                if (index < 0 || index >= this.slides.length) return;
+                this.currentSlide = index;
+                this.slides[index].scrollIntoView({ behavior: 'smooth' });
+                this.updateNavDots();
+                this.updateProgressBar();
+            }
+
+            setupKeyboardNav() {
+                document.addEventListener('keydown', (e) => {
+                    if (e.target.getAttribute && e.target.getAttribute('contenteditable') === 'true') return;
+                    if (e.key === 'ArrowDown' || e.key === ' ' || e.key === 'PageDown') {
+                        e.preventDefault(); this.goTo(this.currentSlide + 1);
+                    } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+                        e.preventDefault(); this.goTo(this.currentSlide - 1);
+                    } else if (e.key === 'Home') {
+                        e.preventDefault(); this.goTo(0);
+                    } else if (e.key === 'End') {
+                        e.preventDefault(); this.goTo(this.slides.length - 1);
+                    }
+                });
+            }
+
+            setupTouchNav() {
+                let startY = 0;
+                document.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; }, { passive: true });
+                document.addEventListener('touchend', (e) => {
+                    const diff = startY - e.changedTouches[0].clientY;
+                    if (Math.abs(diff) > 50) {
+                        diff > 0 ? this.goTo(this.currentSlide + 1) : this.goTo(this.currentSlide - 1);
+                    }
+                }, { passive: true });
+            }
+
+            setupWheelNav() {
+                let lastWheel = 0;
+                document.addEventListener('wheel', (e) => {
+                    const now = Date.now();
+                    if (now - lastWheel < 800) return;
+                    lastWheel = now;
+                    if (e.deltaY > 0) this.goTo(this.currentSlide + 1);
+                    else if (e.deltaY < 0) this.goTo(this.currentSlide - 1);
+                }, { passive: true });
+            }
+
+            setupProgressBar() {
+                this.progressBar = document.getElementById('progressBar');
+                this.updateProgressBar();
+            }
+
+            updateProgressBar() {
+                if (!this.progressBar) return;
+                const pct = ((this.currentSlide + 1) / this.slides.length) * 100;
+                this.progressBar.style.width = pct + '%';
+            }
+
+            setupNavDots() {
+                const nav = document.getElementById('navDots');
+                if (!nav) return;
+                this.slides.forEach((_, i) => {
+                    const dot = document.createElement('button');
+                    dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
+                    dot.setAttribute('aria-label', `Slide ${i + 1}`);
+                    dot.addEventListener('click', () => this.goTo(i));
+                    nav.appendChild(dot);
+                });
+            }
+
+            updateNavDots() {
+                document.querySelectorAll('.nav-dot').forEach((d, i) => {
+                    d.classList.toggle('active', i === this.currentSlide);
+                });
+            }
+        }
+
+        /* === INLINE EDITOR === */
+        class InlineEditor {
+            constructor() {
+                this.isActive = false;
+                this.storageKey = 'openclaw-slides-edits';
+                this.loadEdits();
+            }
+
+            toggleEditMode() {
+                this.isActive = !this.isActive;
+                document.body.classList.toggle('editing', this.isActive);
+                const toggle = document.getElementById('editToggle');
+                toggle.classList.toggle('active', this.isActive);
+                toggle.textContent = this.isActive ? '💾 save' : '✏️ edit';
+                document.querySelectorAll('h1, h2, h3, p, td, th, span.val, span.lbl').forEach(el => {
+                    if (el.closest('.slide-header') || el.closest('.nav-dots') || el.closest('.edit-toggle') || el.closest('.keyboard-hint')) return;
+                    el.setAttribute('contenteditable', this.isActive ? 'true' : 'false');
+                });
+                if (!this.isActive) this.saveEdits();
+            }
+
+            saveEdits() {
+                const data = {};
+                document.querySelectorAll('.slide').forEach((slide, si) => {
+                    const editables = slide.querySelectorAll('[contenteditable]');
+                    editables.forEach((el, ei) => {
+                        if (el.textContent !== el.getAttribute('data-original')) {
+                            data[`${si}-${ei}`] = el.innerHTML;
+                        }
+                    });
+                });
+                localStorage.setItem(this.storageKey, JSON.stringify(data));
+            }
+
+            loadEdits() {
+                try {
+                    const data = JSON.parse(localStorage.getItem(this.storageKey));
+                    if (!data) return;
+                    document.querySelectorAll('.slide').forEach((slide, si) => {
+                        const editables = slide.querySelectorAll('h1, h2, h3, p, td, th');
+                        editables.forEach((el, ei) => {
+                            const key = `${si}-${ei}`;
+                            if (data[key]) {
+                                el.setAttribute('data-original', el.textContent);
+                                el.innerHTML = data[key];
+                            }
+                        });
+                    });
+                } catch (e) { }
+            }
+        }
+
+        /* === INIT === */
+        const presentation = new SlidePresentation();
+        const editor = new InlineEditor();
+
+        // Edit toggle interactions
+        const editToggle = document.getElementById('editToggle');
+        const editHotzone = document.getElementById('editHotzone');
+        let hideTimeout = null;
+
+        editToggle.addEventListener('click', () => editor.toggleEditMode());
+        editHotzone.addEventListener('click', () => editor.toggleEditMode());
+
+        editHotzone.addEventListener('mouseenter', () => {
+            clearTimeout(hideTimeout);
+            editToggle.classList.add('show');
+        });
+        editHotzone.addEventListener('mouseleave', () => {
+            hideTimeout = setTimeout(() => {
+                if (!editor.isActive) editToggle.classList.remove('show');
+            }, 400);
+        });
+        editToggle.addEventListener('mouseenter', () => clearTimeout(hideTimeout));
+        editToggle.addEventListener('mouseleave', () => {
+            hideTimeout = setTimeout(() => {
+                if (!editor.isActive) editToggle.classList.remove('show');
+            }, 400);
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if ((e.key === 'e' || e.key === 'E') && !e.target.getAttribute('contenteditable')) {
+                editor.toggleEditMode();
+            }
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                if (editor.isActive) { editor.saveEdits(); }
+            }
+        });
+
+        // Ambient glow tracking
+        document.addEventListener('mousemove', (e) => {
+            const x = (e.clientX / window.innerWidth) * 100;
+            const y = (e.clientY / window.innerHeight) * 100;
+            document.documentElement.style.setProperty('--x', x + '%');
+            document.documentElement.style.setProperty('--y', y + '%');
+        });
+    </script>
+</body>
+
+</html>
